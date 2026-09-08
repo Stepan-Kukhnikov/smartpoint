@@ -4,7 +4,18 @@ import { defineStore } from 'pinia'
 const STORAGE_KEY = 'favorite-users'
 
 export const useFavoritesStore = defineStore('favorites', () => {
-  const items = ref(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'))
+  function loadFromStorage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      const parsed = raw ? JSON.parse(raw) : []
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
+
+  const items = ref(loadFromStorage())
+  const count = computed(() => items.value.length)
   const isEmpty = computed(() => items.value.length === 0)
 
   const ids = computed(() => new Set(items.value.map(u => u.id)))
@@ -21,5 +32,5 @@ export const useFavoritesStore = defineStore('favorites', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(val))
   }, { deep: true })
 
-  return { items, isEmpty, isFavorite, toggle, remove }
+  return { items, count, isEmpty, isFavorite, toggle, remove }
 })
